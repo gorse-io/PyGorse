@@ -1,10 +1,7 @@
-from collections import namedtuple
 from datetime import datetime
 from typing import List
 
 import requests
-
-Success = namedtuple("Success", ["RowAffected"])
 
 
 class GorseException(BaseException):
@@ -19,8 +16,8 @@ class Gorse:
         self.api_key = api_key
 
     def insert_feedback(
-            self, feedback_type: str, user_id: str, item_id: str
-    ) -> Success:
+            self, feedback_type: str, user_id: str, item_id: str, timestamp: str = datetime.now().isoformat()
+    ) -> dict:
         r = requests.post(
             self.entry_point + "/api/feedback",
             headers={"X-API-Key": self.api_key},
@@ -29,7 +26,7 @@ class Gorse:
                     "FeedbackType": feedback_type,
                     "UserId": user_id,
                     "ItemId": item_id,
-                    "Timestamp": datetime.now().isoformat(),
+                    "Timestamp": timestamp,
                 }
             ],
         )
@@ -38,7 +35,7 @@ class Gorse:
         raise GorseException(r.status_code, r.text)
 
     def list_feedbacks(self, feedback_type: str, user_id: str):
-        r = requests.get(self.entry_point + "/api//user/" + user_id + "/feedback/" + feedback_type,
+        r = requests.get(self.entry_point + "/api/user/" + user_id + "/feedback/" + feedback_type,
                          headers={"X-API-Key": self.api_key})
         if r.status_code == 200:
             return r.json()
@@ -53,7 +50,16 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def insert_feedbacks(self, feedbacks) -> Success:
+    def get_neighbors(self, item_id: str, n: int = 3) -> List[str]:
+        r = requests.get(
+            self.entry_point + "/api/item/%s/neighbors?n=%d" % (item_id, n),
+            headers={"X-API-Key": self.api_key},
+        )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
+    def insert_feedbacks(self, feedbacks: list) -> dict:
         r = requests.post(
             self.entry_point + "/api/feedback",
             headers={"X-API-Key": self.api_key},
@@ -63,7 +69,7 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def insert_item(self, item) -> Success:
+    def insert_item(self, item) -> dict:
         r = requests.post(
             self.entry_point + "/api/item",
             headers={"X-API-Key": self.api_key},
@@ -73,7 +79,16 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def delete_item(self, item_id: str) -> Success:
+    def get_item(self, item_id: str) -> dict:
+        r = requests.get(
+            self.entry_point + "/api/item/%s" % item_id,
+            headers={"X-API-Key": self.api_key},
+        )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
+    def delete_item(self, item_id: str) -> dict:
         r = requests.delete(
             self.entry_point + "/api/item/%s" % item_id,
             headers={"X-API-Key": self.api_key},
@@ -82,11 +97,29 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def insert_user(self, user) -> Success:
+    def insert_user(self, user) -> dict:
         r = requests.post(
             self.entry_point + "/api/user",
             headers={"X-API-Key": self.api_key},
             json=user,
+        )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
+    def get_user(self, user_id: str) -> dict:
+        r = requests.get(
+            self.entry_point + "/api/user/%s" % user_id,
+            headers={"X-API-Key": self.api_key},
+        )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
+    def delete_user(self, user_id: str) -> dict:
+        r = requests.delete(
+            self.entry_point + "/api/user/%s" % user_id,
+            headers={"X-API-Key": self.api_key},
         )
         if r.status_code == 200:
             return r.json()

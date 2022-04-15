@@ -1,4 +1,4 @@
-name: test
+name: CI
 
 on:
   push:
@@ -9,9 +9,12 @@ on:
       - main
 
 jobs:
-  e2e_test:
-    name: e2e tests
+  test:
     runs-on: ubuntu-latest
+    name: test (Python ${{ matrix.python-version }})
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v1
 
@@ -19,7 +22,7 @@ jobs:
       working-directory: ./tests
       run: docker-compose up -d
 
-    - name: Check the deployed service URL
+    - name: Check the deployed service health
       uses: jtalk/url-health-check-action@v2
       with:
         # Check the following URLs one by one sequentially
@@ -31,8 +34,15 @@ jobs:
         # Retry all errors, including 404. This option might trigger curl upgrade.
         retry-all: true
 
-    - name: Download dataset
-      run: wget https://cdn.gorse.io/example/github.sql
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "${{ matrix.python-version }}"
 
-    - name: Import dataset
-      run: mysql -h 127.0.0.1 -u gorse -pgorse_pass gorse < github.sql
+      - name: Install tox
+        run: |
+          python -m pip install --upgrade pip
+          pip install tox tox-gh-actions
+
+      - name: Run tests
+        run: tox

@@ -1,5 +1,7 @@
 # PyGorse
 
+[![test](https://github.com/gorse-io/PyGorse/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/gorse-io/PyGorse/actions/workflows/test.yml)
+
 Python SDK for gorse recommender system.
 
 ## Install
