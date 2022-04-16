@@ -50,6 +50,16 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
+    def session_recommend(self, feedbacks: list, n: int = 10) -> list:
+        r = requests.post(
+            self.entry_point + "/api/session/recommend?n=%d" % n,
+            headers={"X-API-Key": self.api_key},
+            json=feedbacks,
+        )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
     def get_neighbors(self, item_id: str, n: int = 3) -> List[str]:
         r = requests.get(
             self.entry_point + "/api/item/%s/neighbors?n=%d" % (item_id, n),

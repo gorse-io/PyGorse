@@ -71,7 +71,7 @@ def test_recommend():
 
     client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
     recommend = client.get_recommend('100')
-    assert recommend == ['3','2','1']
+    assert recommend == ['3', '2', '1']
 
 
 def test_neighbors():
@@ -81,3 +81,24 @@ def test_neighbors():
     client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
     items = client.get_neighbors('100')
     assert items == [{'Id': '3', 'Score': 3}, {'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
+
+
+def test_session_recommend():
+    r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+    r.zadd('item_neighbors/1', {"2": 100000, "9": 1})
+    r.zadd('item_neighbors/2', {"3": 100000, "8": 1, "9": 1})
+    r.zadd('item_neighbors/3', {"4": 100000, "7": 1, "8": 1, "9": 1})
+    r.zadd('item_neighbors/4', {"1": 100000, "6": 1, "7": 1, "8": 1, "9": 1})
+
+    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    recommend = client.session_recommend([
+        {"FeedbackType": "like", "UserId": "0", "ItemId": "1",
+         "Timestamp": datetime(2010, 1, 1, 1, 1, 1, 1).isoformat()},
+        {"FeedbackType": "like", "UserId": "0", "ItemId": "2",
+         "Timestamp": datetime(2009, 1, 1, 1, 1, 1, 1).isoformat()},
+        {"FeedbackType": "like", "UserId": "0", "ItemId": "3",
+         "Timestamp": datetime(2008, 1, 1, 1, 1, 1, 1).isoformat()},
+        {"FeedbackType": "like", "UserId": "0", "ItemId": "4",
+         "Timestamp": datetime(2007, 1, 1, 1, 1, 1, 1).isoformat()},
+    ], 3)
+    assert recommend == [{'Id': "9", 'Score': 4}, {'Id': "8", 'Score': 3}, {'Id': "7", 'Score': 2}]
