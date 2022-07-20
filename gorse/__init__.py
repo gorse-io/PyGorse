@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 import requests
@@ -16,7 +15,7 @@ class Gorse:
         self.api_key = api_key
 
     def insert_feedback(
-            self, feedback_type: str, user_id: str, item_id: str, timestamp: str = datetime.now().isoformat()
+            self, feedback_type: str, user_id: str, item_id: str, timestamp: str
     ) -> dict:
         r = requests.post(
             self.entry_point + "/api/feedback",
