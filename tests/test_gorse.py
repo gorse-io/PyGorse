@@ -3,9 +3,11 @@ from datetime import datetime
 import redis
 from gorse import Gorse, GorseException
 
+GORSE_ENDPOINT = 'http://127.0.0.1:8088'
+
 
 def test_users():
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     # Insert a user.
     r = client.insert_user({'UserId': '100', 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
     assert r['RowAffected'] == 1
@@ -23,7 +25,7 @@ def test_users():
 
 
 def test_items():
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
     # Insert an item.
     r = client.insert_item(
@@ -46,7 +48,7 @@ def test_items():
 
 
 def test_feedback():
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
     # Insert a feedback
     r = client.insert_feedback('like', '100', '100', timestamp)
@@ -69,7 +71,7 @@ def test_recommend():
     r = redis.Redis(host='127.0.0.1', port=6379, db=0)
     r.zadd('offline_recommend/100', {'1': 1, '2': 2, '3': 3})
 
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     recommend = client.get_recommend('100')
     assert recommend == ['3', '2', '1']
 
@@ -78,7 +80,7 @@ def test_neighbors():
     r = redis.Redis(host='127.0.0.1', port=6379, db=0)
     r.zadd('item_neighbors/100', {'1': 1, '2': 2, '3': 3})
 
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     items = client.get_neighbors('100')
     assert items == [{'Id': '3', 'Score': 3}, {'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
 
@@ -90,7 +92,7 @@ def test_session_recommend():
     r.zadd('item_neighbors/3', {"4": 100000, "7": 1, "8": 1, "9": 1})
     r.zadd('item_neighbors/4', {"1": 100000, "6": 1, "7": 1, "8": 1, "9": 1})
 
-    client = Gorse('http://127.0.0.1:8087', 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
     recommend = client.session_recommend([
         {"FeedbackType": "like", "UserId": "0", "ItemId": "1",
          "Timestamp": datetime(2010, 1, 1, 1, 1, 1, 1).isoformat()},
