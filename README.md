@@ -1,6 +1,8 @@
 # PyGorse
 
-[![CI](https://github.com/gorse-io/PyGorse/workflows/test/badge.svg)](https://github.com/gorse-io/PyGorse/actions/workflows/ci.yml)
+[![CI](https://github.com/gorse-io/PyGorse/actions/workflows/ci.yml/badge.svg)](https://github.com/gorse-io/PyGorse/actions/workflows/ci.yml)
+![](https://img.shields.io/pypi/v/pygorse)
+![](https://img.shields.io/pypi/dm/pygorse)
 
 Python SDK for gorse recommender system.
 
