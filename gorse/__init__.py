@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List
+from typing import List, Tuple
 
 import requests
 
@@ -106,6 +106,34 @@ class Gorse:
             self.entry_point + "/api/item/%s" % item_id,
             headers={"X-API-Key": self.api_key},
         )
+        if r.status_code == 200:
+            return r.json()
+        raise GorseException(r.status_code, r.text)
+
+    def get_items(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get items.
+        :param n: number of returned items
+        :param cursor: cursor for next page
+        :return: items and cursor for next page
+        """
+        r = requests.get(self.entry_point + "/api/items", params={'n': n, 'cursor': cursor},
+                         headers={"X-API-Key": self.api_key})
+        if r.status_code == 200:
+            json = r.json()
+            return json['Items'], json['Cursor']
+        raise GorseException(r.status_code, r.text)
+
+    def update_item(self, item_id: str, is_hidden: bool = None, categories: List[str] = None, labels: List[str] = None,
+                    timestamp: str = None,
+                    comment: str = None) -> dict:
+        r = requests.patch(self.entry_point + '/api/item/%s' % item_id, headers={"X-API-Key": self.api_key}, json={
+            "Categories": categories,
+            "Comment": comment,
+            "IsHidden": is_hidden,
+            "Labels": labels,
+            "Timestamp": timestamp
+        })
         if r.status_code == 200:
             return r.json()
         raise GorseException(r.status_code, r.text)

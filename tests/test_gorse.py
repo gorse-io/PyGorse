@@ -14,13 +14,15 @@
 from datetime import datetime
 
 import redis
+
 from gorse import Gorse, GorseException
 
 GORSE_ENDPOINT = 'http://127.0.0.1:8088'
+GORSE_API_KEY = 'zhenghaoz'
 
 
 def test_users():
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     # Insert a user.
     r = client.insert_user({'UserId': '100', 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
     assert r['RowAffected'] == 1
@@ -38,19 +40,46 @@ def test_users():
 
 
 def test_items():
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-    # Insert an item.
-    r = client.insert_item(
+    items = [
         {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'], 'Timestamp': timestamp,
-         'Comment': 'comment'})
+         'Comment': 'comment'},
+        {'ItemId': '200', 'IsHidden': True, 'Labels': ['b', 'c', 'd'], 'Categories': ['d', 'a'], 'Timestamp': timestamp,
+         'Comment': 'comment'},
+        {'ItemId': '300', 'IsHidden': True, 'Labels': ['c', 'd', 'e'], 'Categories': ['d', 'j'], 'Timestamp': timestamp,
+         'Comment': 'comment'},
+        {'ItemId': '400', 'IsHidden': True, 'Labels': ['d', 'e', 'f'], 'Categories': ['d', 'm'], 'Timestamp': timestamp,
+         'Comment': 'comment'},
+        {'ItemId': '500', 'IsHidden': True, 'Labels': ['e', 'f', 'g'], 'Categories': ['d', 't'], 'Timestamp': timestamp,
+         'Comment': 'comment'}
+    ]
+    # Insert items.
+    for item in items:
+        r = client.insert_item(item)
+        assert r['RowAffected'] == 1
+    # Get an item.
+    item = client.get_item('100')
+    assert item == items[0]
+    # Get items
+    return_items = []
+    part, cursor = client.get_items(3)
+    assert len(part) == 3
+    assert len(cursor) > 0
+    return_items.extend(part)
+    part, cursor = client.get_items(3, cursor)
+    assert len(part) == 2
+    assert len(cursor) == 0
+    return_items.extend(part)
+    assert return_items == items
+    # Update item
+    r = client.update_item('100', labels=['x', 'y', 'z'])
     assert r['RowAffected'] == 1
-    # Get this user.
-    user = client.get_item('100')
-    assert user == {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'],
+    item = client.get_item('100')
+    assert item == {'ItemId': '100', 'IsHidden': True, 'Labels': ['x', 'y', 'z'], 'Categories': ['d', 'e'],
                     'Timestamp': timestamp,
                     'Comment': 'comment'}
-    # Delete this user.
+    # Delete this item.
     r = client.delete_item('100')
     assert r['RowAffected'] == 1
     try:
@@ -61,7 +90,7 @@ def test_items():
 
 
 def test_feedback():
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
     # Insert a feedback
     r = client.insert_feedback('like', '100', '100', timestamp)
@@ -84,7 +113,7 @@ def test_recommend():
     r = redis.Redis(host='127.0.0.1', port=6379, db=0)
     r.zadd('offline_recommend/100', {'1': 1, '2': 2, '3': 3})
 
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     recommend = client.get_recommend('100')
     assert recommend == ['3', '2', '1']
 
@@ -93,7 +122,7 @@ def test_neighbors():
     r = redis.Redis(host='127.0.0.1', port=6379, db=0)
     r.zadd('item_neighbors/100', {'1': 1, '2': 2, '3': 3})
 
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     items = client.get_neighbors('100')
     assert items == [{'Id': '3', 'Score': 3}, {'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
 
@@ -105,7 +134,7 @@ def test_session_recommend():
     r.zadd('item_neighbors/3', {"4": 100000, "7": 1, "8": 1, "9": 1})
     r.zadd('item_neighbors/4', {"1": 100000, "6": 1, "7": 1, "8": 1, "9": 1})
 
-    client = Gorse(GORSE_ENDPOINT, 'zhenghaoz')
+    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     recommend = client.session_recommend([
         {"FeedbackType": "like", "UserId": "0", "ItemId": "1",
          "Timestamp": datetime(2010, 1, 1, 1, 1, 1, 1).isoformat()},
