@@ -72,9 +72,9 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def get_neighbors(self, item_id: str, n: int = 3) -> List[str]:
+    def get_neighbors(self, item_id: str, n: int = 10, offset: int = 0) -> List[str]:
         r = requests.get(
-            self.entry_point + "/api/item/%s/neighbors?n=%d" % (item_id, n),
+            self.entry_point + "/api/item/%s/neighbors?n=%d&offset=%d" % (item_id, n, offset),
             headers={"X-API-Key": self.api_key},
         )
         if r.status_code == 200:

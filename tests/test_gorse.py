@@ -123,8 +123,10 @@ def test_neighbors():
     r.zadd('item_neighbors/100', {'1': 1, '2': 2, '3': 3})
 
     client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
-    items = client.get_neighbors('100')
+    items = client.get_neighbors('100', n=3)
     assert items == [{'Id': '3', 'Score': 3}, {'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
+    items = client.get_neighbors('100', n=1, offset=1)
+    assert items == [{'Id': '2', 'Score': 2}]
 
 
 def test_session_recommend():
