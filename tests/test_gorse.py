@@ -116,6 +116,8 @@ def test_recommend():
     client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     recommend = client.get_recommend('100')
     assert recommend == ['3', '2', '1']
+    recommend = client.get_recommend("100", n=1, offset=1)
+    assert recommend == ["2"]
 
 
 def test_neighbors():

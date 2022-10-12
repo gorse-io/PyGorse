@@ -53,9 +53,16 @@ class Gorse:
             return r.json()
         raise GorseException(r.status_code, r.text)
 
-    def get_recommend(self, user_id: str, category: str = "", n: int = 10) -> List[str]:
+    def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0, write_back_type: str = None,
+                      write_back_delay: str = None) -> List[str]:
+        payload = {"n": n, "offset": offset}
+        if write_back_type:
+            payload["write-back-type"] = write_back_type
+        if write_back_delay:
+            payload["write-back-delay"] = write_back_delay
         r = requests.get(
-            self.entry_point + "/api/recommend/%s/%s?n=%d" % (user_id, category, n),
+            self.entry_point + "/api/recommend/%s/%s" % (user_id, category),
+            params=payload,
             headers={"X-API-Key": self.api_key},
         )
         if r.status_code == 200:
