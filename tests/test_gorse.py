@@ -12,31 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datetime import datetime
+import unittest
 
 import redis
 
-from gorse import Gorse, GorseException
+from gorse import Gorse, GorseException, AsyncGorse
 
 GORSE_ENDPOINT = 'http://127.0.0.1:8088'
 GORSE_API_KEY = 'zhenghaoz'
 
 
-def test_users():
-    client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
-    # Insert a user.
-    r = client.insert_user({'UserId': '100', 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
-    assert r['RowAffected'] == 1
-    # Get this user.
-    user = client.get_user('100')
-    assert user == {'UserId': '100', 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'}
-    # Delete this user.
-    r = client.delete_user('100')
-    assert r['RowAffected'] == 1
-    try:
-        client.get_user('100')
-        assert False
-    except GorseException as e:
-        assert e.status_code == 404
+class TestGorseClient(unittest.TestCase):
+    def test_users(self):
+        client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        # Insert a user.
+        r = client.insert_user({'UserId': '100', 'Labels': [
+            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        self.assertEqual(r['RowAffected'], 1)
+        # Get this user.
+        user = client.get_user('100')
+        self.assertDictEqual(user, {'UserId': '100', 'Labels': [
+            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        # Delete this user.
+        r = client.delete_user('100')
+        self.assertEqual(r['RowAffected'], 1)
+        try:
+            client.get_user('100')
+            self.fail()
+        except GorseException as e:
+            self.assertEqual(e.status_code, 404)
 
 
 def test_items():
@@ -97,15 +101,19 @@ def test_feedback():
     assert r['RowAffected'] == 1
     # Insert feedbacks
     r = client.insert_feedbacks([
-        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200', 'Timestamp': timestamp},
-        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300', 'Timestamp': timestamp}
+        {'FeedbackType': 'read', 'UserId': '100',
+            'ItemId': '200', 'Timestamp': timestamp},
+        {'FeedbackType': 'read', 'UserId': '100',
+            'ItemId': '300', 'Timestamp': timestamp}
     ])
     assert r['RowAffected'] == 2
     # List feedbacks
     feedbacks = client.list_feedbacks('read', '100')
     assert feedbacks == [
-        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200', 'Timestamp': timestamp, 'Comment': ''},
-        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300', 'Timestamp': timestamp, 'Comment': ''}
+        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
+            'Timestamp': timestamp, 'Comment': ''},
+        {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
+            'Timestamp': timestamp, 'Comment': ''}
     ]
 
 
@@ -126,7 +134,8 @@ def test_neighbors():
 
     client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
     items = client.get_neighbors('100', n=3)
-    assert items == [{'Id': '3', 'Score': 3}, {'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
+    assert items == [{'Id': '3', 'Score': 3}, {
+        'Id': '2', 'Score': 2}, {'Id': '1', 'Score': 1}]
     items = client.get_neighbors('100', n=1, offset=1)
     assert items == [{'Id': '2', 'Score': 2}]
 
@@ -149,4 +158,26 @@ def test_session_recommend():
         {"FeedbackType": "like", "UserId": "0", "ItemId": "4",
          "Timestamp": datetime(2007, 1, 1, 1, 1, 1, 1).isoformat()},
     ], 3)
-    assert recommend == [{'Id': "9", 'Score': 4}, {'Id': "8", 'Score': 3}, {'Id': "7", 'Score': 2}]
+    assert recommend == [{'Id': "9", 'Score': 4}, {
+        'Id': "8", 'Score': 3}, {'Id': "7", 'Score': 2}]
+
+
+class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
+    async def test_users(self):
+        client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        # Insert a user.
+        r = await client.insert_user({'UserId': '100', 'Labels': [
+            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        self.assertEqual(r['RowAffected'], 1)
+        # Get this user.
+        user = await client.get_user('100')
+        self.assertDictEqual(user, {'UserId': '100', 'Labels': [
+            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        # Delete this user.
+        r = await client.delete_user('100')
+        self.assertEqual(r['RowAffected'], 1)
+        try:
+            await client.get_user('100')
+            self.fail()
+        except GorseException as e:
+            self.assertEqual(e.status_code, 404)
