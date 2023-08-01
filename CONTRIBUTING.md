@@ -10,7 +10,7 @@ Reading and following these guidelines will help us make the contribution proces
 
 These following installations are required:
 
-- **Python 3.7+**: The minimum version of Python required to run PyGorse.
+- **Python 3.8+**: The minimum version of Python required to run PyGorse.
 - **Docker Compose**: Start a local Gorse cluster for testing.
 
 After installing the required software, run the following commands:
