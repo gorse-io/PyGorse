@@ -92,6 +92,17 @@ class Gorse:
         """
         return self.__request("POST", f"{self.entry_point}/api/feedback", json=feedbacks)
 
+    def get_feedbacks(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get feedbacks.
+        :param n: number of returned feedbacks
+        :param cursor: cursor for next page
+        :return: feedbacks and cursor for next page
+        """
+        response = self.__request(
+            "GET", f"{self.entry_point}/api/feedback", params={'n': n, 'cursor': cursor})
+        return response['Feedback'], response['Cursor']
+
     def insert_item(self, item) -> dict:
         """
         Insert an item.
