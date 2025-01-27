@@ -92,6 +92,17 @@ class Gorse:
         """
         return self.__request("POST", f"{self.entry_point}/api/feedback", json=feedbacks)
 
+    def get_feedbacks(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get feedbacks.
+        :param n: number of returned feedbacks
+        :param cursor: cursor for next page
+        :return: feedbacks and cursor for next page
+        """
+        response = self.__request(
+            "GET", f"{self.entry_point}/api/feedback", params={'n': n, 'cursor': cursor})
+        return response['Feedback'], response['Cursor']
+
     def insert_item(self, item) -> dict:
         """
         Insert an item.
@@ -141,11 +152,28 @@ class Gorse:
         """
         return self.__request("POST", f"{self.entry_point}/api/user", json=user)
 
+    def insert_users(self, users: List[dict]) -> dict:
+        """
+        Insert users.
+        """
+        return self.__request("POST", f"{self.entry_point}/api/users", json=users)
+
     def get_user(self, user_id: str) -> dict:
         """
         Get a user.
         """
         return self.__request("GET", f"{self.entry_point}/api/user/{user_id}")
+
+    def get_users(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get users.
+        :param n: number of returned users
+        :param cursor: cursor for next page
+        :return: users and cursor for next page
+        """
+        response = self.__request(
+            "GET", f"{self.entry_point}/api/users", params={'n': n, 'cursor': cursor})
+        return response['Users'], response['Cursor']
 
     def delete_user(self, user_id: str) -> dict:
         """
@@ -201,8 +229,9 @@ class AsyncGorse:
         """
         return await self.__request("GET", f"{self.entry_point}/api/user/{user_id}/feedback/{feedback_type}")
 
-    async def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0, write_back_type: str = None,
-                      write_back_delay: str = None) -> List[str]:
+    async def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+                            write_back_type: str = None,
+                            write_back_delay: str = None) -> List[str]:
         """
         Get recommendation.
         """
@@ -231,6 +260,17 @@ class AsyncGorse:
         """
         return await self.__request("POST", f"{self.entry_point}/api/feedback", json=feedbacks)
 
+    async def get_feedbacks(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get feedbacks.
+        :param n: number of returned feedbacks
+        :param cursor: cursor for next page
+        :return: feedbacks and cursor for next page
+        """
+        response = await self.__request(
+            "GET", f"{self.entry_point}/api/feedback", params={'n': n, 'cursor': cursor})
+        return response['Feedback'], response['Cursor']
+
     async def insert_item(self, item) -> dict:
         """
         Insert an item.
@@ -254,9 +294,10 @@ class AsyncGorse:
             "GET", f"{self.entry_point}/api/items", params={'n': n, 'cursor': cursor})
         return response['Items'], response['Cursor']
 
-    async def update_item(self, item_id: str, is_hidden: bool = None, categories: List[str] = None, labels: List[str] = None,
-                    timestamp: str = None,
-                    comment: str = None) -> dict:
+    async def update_item(self, item_id: str, is_hidden: bool = None, categories: List[str] = None,
+                          labels: List[str] = None,
+                          timestamp: str = None,
+                          comment: str = None) -> dict:
         """
         Update an item.
         """
@@ -280,11 +321,28 @@ class AsyncGorse:
         """
         return await self.__request("POST", f"{self.entry_point}/api/user", json=user)
 
+    async def insert_users(self, users: List[dict]) -> dict:
+        """
+        Insert users.
+        """
+        return await self.__request("POST", f"{self.entry_point}/api/users", json=users)
+
     async def get_user(self, user_id: str) -> dict:
         """
         Get a user.
         """
         return await self.__request("GET", f"{self.entry_point}/api/user/{user_id}")
+
+    async def get_users(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get users.
+        :param n: number of returned users
+        :param cursor: cursor for next page
+        :return: users and cursor for next page
+        """
+        response = await self.__request(
+            "GET", f"{self.entry_point}/api/users", params={'n': n, 'cursor': cursor})
+        return response['Users'], response['Cursor']
 
     async def delete_user(self, user_id: str) -> dict:
         """
@@ -294,7 +352,8 @@ class AsyncGorse:
 
     async def __request(self, method: str, url: str, params=None, json=None) -> dict:
         async with aiohttp.ClientSession() as session:
-            async with session.request(method, url, params=params, json=json, headers={"X-API-Key": self.api_key}) as response:
+            async with session.request(method, url, params=params, json=json,
+                                       headers={"X-API-Key": self.api_key}) as response:
                 if response.status == 200:
                     return await response.json()
                 raise GorseException(response.status, await response.text())

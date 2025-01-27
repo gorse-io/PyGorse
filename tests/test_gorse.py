@@ -25,14 +25,17 @@ GORSE_API_KEY = 'zhenghaoz'
 class TestGorseClient(unittest.TestCase):
     def test_users(self):
         client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
+
         # Insert a user.
         r = client.insert_user({'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
         self.assertEqual(r['RowAffected'], 1)
+
         # Get this user.
         user = client.get_user('100')
         self.assertDictEqual(user, {'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+
         # Delete this user.
         r = client.delete_user('100')
         self.assertEqual(r['RowAffected'], 1)
@@ -42,19 +45,41 @@ class TestGorseClient(unittest.TestCase):
         except GorseException as e:
             self.assertEqual(e.status_code, 404)
 
+        # Insert users
+        users = []
+        for i in range(10):
+            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        r = client.insert_users(users)
+        self.assertEqual(r['RowAffected'], 10)
+
+        # Get users
+        return_users = []
+        cursor = ''
+        while True:
+            part, cursor = client.get_users(3, cursor)
+            return_users.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_users, users)
+
     def test_items(self):
         client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
         timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
         items = [
-            {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'], 'Timestamp': timestamp,
+            {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '200', 'IsHidden': True, 'Labels': ['b', 'c', 'd'], 'Categories': ['d', 'a'], 'Timestamp': timestamp,
+            {'ItemId': '200', 'IsHidden': True, 'Labels': ['b', 'c', 'd'], 'Categories': ['d', 'a'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '300', 'IsHidden': True, 'Labels': ['c', 'd', 'e'], 'Categories': ['d', 'j'], 'Timestamp': timestamp,
+            {'ItemId': '300', 'IsHidden': True, 'Labels': ['c', 'd', 'e'], 'Categories': ['d', 'j'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '400', 'IsHidden': True, 'Labels': ['d', 'e', 'f'], 'Categories': ['d', 'm'], 'Timestamp': timestamp,
+            {'ItemId': '400', 'IsHidden': True, 'Labels': ['d', 'e', 'f'], 'Categories': ['d', 'm'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '500', 'IsHidden': True, 'Labels': ['e', 'f', 'g'], 'Categories': ['d', 't'], 'Timestamp': timestamp,
+            {'ItemId': '500', 'IsHidden': True, 'Labels': ['e', 'f', 'g'], 'Categories': ['d', 't'],
+             'Timestamp': timestamp,
              'Comment': 'comment'}
         ]
         # Insert items.
@@ -79,9 +104,10 @@ class TestGorseClient(unittest.TestCase):
         r = client.update_item('100', labels=['x', 'y', 'z'])
         self.assertEqual(r['RowAffected'], 1)
         item = client.get_item('100')
-        self.assertDictEqual(item, {'ItemId': '100', 'IsHidden': True, 'Labels': ['x', 'y', 'z'], 'Categories': ['d', 'e'],
-                                    'Timestamp': timestamp,
-                                    'Comment': 'comment'})
+        self.assertDictEqual(item,
+                             {'ItemId': '100', 'IsHidden': True, 'Labels': ['x', 'y', 'z'], 'Categories': ['d', 'e'],
+                              'Timestamp': timestamp,
+                              'Comment': 'comment'})
         # Delete this item.
         r = client.delete_item('100')
         self.assertEqual(r['RowAffected'], 1)
@@ -100,18 +126,34 @@ class TestGorseClient(unittest.TestCase):
         # Insert feedbacks
         r = client.insert_feedbacks([
             {'FeedbackType': 'read', 'UserId': '100',
-                'ItemId': '200', 'Timestamp': timestamp},
+             'ItemId': '200', 'Timestamp': timestamp},
             {'FeedbackType': 'read', 'UserId': '100',
-                'ItemId': '300', 'Timestamp': timestamp}
+             'ItemId': '300', 'Timestamp': timestamp}
         ])
         self.assertEqual(r['RowAffected'], 2)
         # List feedbacks
         feedbacks = client.list_feedbacks('read', '100')
         self.assertEqual(feedbacks, [
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
-                'Timestamp': timestamp, 'Comment': ''},
+             'Timestamp': timestamp, 'Comment': ''},
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
-                'Timestamp': timestamp, 'Comment': ''}
+             'Timestamp': timestamp, 'Comment': ''}
+        ])
+        # Get all feedbacks
+        return_feedbacks = []
+        cursor = ''
+        while True:
+            part, cursor = client.get_feedbacks(2, cursor)
+            return_feedbacks.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_feedbacks, [
+            {'FeedbackType': 'like', 'UserId': '100', 'ItemId': '100',
+             'Timestamp': timestamp, 'Comment': ''},
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
+             'Timestamp': timestamp, 'Comment': ''},
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
+             'Timestamp': timestamp, 'Comment': ''}
         ])
 
     def test_recommend(self):
@@ -141,7 +183,7 @@ class TestGorseClient(unittest.TestCase):
         r.zadd('item_neighbors/2', {"3": 100000, "8": 1, "9": 1})
         r.zadd('item_neighbors/3', {"4": 100000, "7": 1, "8": 1, "9": 1})
         r.zadd('item_neighbors/4', {"1": 100000,
-               "6": 1, "7": 1, "8": 1, "9": 1})
+                                    "6": 1, "7": 1, "8": 1, "9": 1})
 
         client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
         recommend = client.session_recommend([
@@ -161,14 +203,17 @@ class TestGorseClient(unittest.TestCase):
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
     async def test_users(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+
         # Insert a user.
         r = await client.insert_user({'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
         self.assertEqual(r['RowAffected'], 1)
+
         # Get this user.
         user = await client.get_user('100')
         self.assertDictEqual(user, {'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+
         # Delete this user.
         r = await client.delete_user('100')
         self.assertEqual(r['RowAffected'], 1)
@@ -178,19 +223,41 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         except GorseException as e:
             self.assertEqual(e.status_code, 404)
 
+        # Insert users
+        users = []
+        for i in range(10):
+            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        r = await client.insert_users(users)
+        self.assertEqual(r['RowAffected'], 10)
+
+        # Get users
+        return_users = []
+        cursor = ''
+        while True:
+            part, cursor = await client.get_users(3, cursor)
+            return_users.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_users, users)
+
     async def test_items(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
         timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
         items = [
-            {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'], 'Timestamp': timestamp,
+            {'ItemId': '100', 'IsHidden': True, 'Labels': ['a', 'b', 'c'], 'Categories': ['d', 'e'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '200', 'IsHidden': True, 'Labels': ['b', 'c', 'd'], 'Categories': ['d', 'a'], 'Timestamp': timestamp,
+            {'ItemId': '200', 'IsHidden': True, 'Labels': ['b', 'c', 'd'], 'Categories': ['d', 'a'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '300', 'IsHidden': True, 'Labels': ['c', 'd', 'e'], 'Categories': ['d', 'j'], 'Timestamp': timestamp,
+            {'ItemId': '300', 'IsHidden': True, 'Labels': ['c', 'd', 'e'], 'Categories': ['d', 'j'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '400', 'IsHidden': True, 'Labels': ['d', 'e', 'f'], 'Categories': ['d', 'm'], 'Timestamp': timestamp,
+            {'ItemId': '400', 'IsHidden': True, 'Labels': ['d', 'e', 'f'], 'Categories': ['d', 'm'],
+             'Timestamp': timestamp,
              'Comment': 'comment'},
-            {'ItemId': '500', 'IsHidden': True, 'Labels': ['e', 'f', 'g'], 'Categories': ['d', 't'], 'Timestamp': timestamp,
+            {'ItemId': '500', 'IsHidden': True, 'Labels': ['e', 'f', 'g'], 'Categories': ['d', 't'],
+             'Timestamp': timestamp,
              'Comment': 'comment'}
         ]
         # Insert items.
@@ -215,9 +282,10 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         r = await client.update_item('100', labels=['x', 'y', 'z'])
         self.assertEqual(r['RowAffected'], 1)
         item = await client.get_item('100')
-        self.assertDictEqual(item, {'ItemId': '100', 'IsHidden': True, 'Labels': ['x', 'y', 'z'], 'Categories': ['d', 'e'],
-                                    'Timestamp': timestamp,
-                                    'Comment': 'comment'})
+        self.assertDictEqual(item,
+                             {'ItemId': '100', 'IsHidden': True, 'Labels': ['x', 'y', 'z'], 'Categories': ['d', 'e'],
+                              'Timestamp': timestamp,
+                              'Comment': 'comment'})
         # Delete this item.
         r = await client.delete_item('100')
         self.assertEqual(r['RowAffected'], 1)
@@ -236,18 +304,34 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         # Insert feedbacks
         r = await client.insert_feedbacks([
             {'FeedbackType': 'read', 'UserId': '100',
-                'ItemId': '200', 'Timestamp': timestamp},
+             'ItemId': '200', 'Timestamp': timestamp},
             {'FeedbackType': 'read', 'UserId': '100',
-                'ItemId': '300', 'Timestamp': timestamp}
+             'ItemId': '300', 'Timestamp': timestamp}
         ])
         self.assertEqual(r['RowAffected'], 2)
         # List feedbacks
         feedbacks = await client.list_feedbacks('read', '100')
         self.assertEqual(feedbacks, [
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
-                'Timestamp': timestamp, 'Comment': ''},
+             'Timestamp': timestamp, 'Comment': ''},
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
-                'Timestamp': timestamp, 'Comment': ''}
+             'Timestamp': timestamp, 'Comment': ''}
+        ])
+        # Get all feedbacks
+        return_feedbacks = []
+        cursor = ''
+        while True:
+            part, cursor = await client.get_feedbacks(2, cursor)
+            return_feedbacks.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_feedbacks, [
+            {'FeedbackType': 'like', 'UserId': '100', 'ItemId': '100',
+             'Timestamp': timestamp, 'Comment': ''},
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
+             'Timestamp': timestamp, 'Comment': ''},
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
+             'Timestamp': timestamp, 'Comment': ''}
         ])
 
     async def test_recommend(self):
@@ -277,7 +361,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         r.zadd('item_neighbors/2', {"3": 100000, "8": 1, "9": 1})
         r.zadd('item_neighbors/3', {"4": 100000, "7": 1, "8": 1, "9": 1})
         r.zadd('item_neighbors/4', {"1": 100000,
-               "6": 1, "7": 1, "8": 1, "9": 1})
+                                    "6": 1, "7": 1, "8": 1, "9": 1})
 
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
         recommend = await client.session_recommend([
