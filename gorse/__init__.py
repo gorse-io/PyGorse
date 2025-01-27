@@ -141,11 +141,28 @@ class Gorse:
         """
         return self.__request("POST", f"{self.entry_point}/api/user", json=user)
 
+    def insert_users(self, users: List[dict]) -> dict:
+        """
+        Insert users.
+        """
+        return self.__request("POST", f"{self.entry_point}/api/users", json=users)
+
     def get_user(self, user_id: str) -> dict:
         """
         Get a user.
         """
         return self.__request("GET", f"{self.entry_point}/api/user/{user_id}")
+
+    def get_users(self, n: int, cursor: str = '') -> Tuple[List[dict], str]:
+        """
+        Get users.
+        :param n: number of returned users
+        :param cursor: cursor for next page
+        :return: users and cursor for next page
+        """
+        response = self.__request(
+            "GET", f"{self.entry_point}/api/users", params={'n': n, 'cursor': cursor})
+        return response['Users'], response['Cursor']
 
     def delete_user(self, user_id: str) -> dict:
         """
