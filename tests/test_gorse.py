@@ -203,14 +203,17 @@ class TestGorseClient(unittest.TestCase):
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
     async def test_users(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+
         # Insert a user.
         r = await client.insert_user({'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
         self.assertEqual(r['RowAffected'], 1)
+
         # Get this user.
         user = await client.get_user('100')
         self.assertDictEqual(user, {'UserId': '100', 'Labels': [
             'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+
         # Delete this user.
         r = await client.delete_user('100')
         self.assertEqual(r['RowAffected'], 1)
@@ -219,6 +222,23 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
             self.fail()
         except GorseException as e:
             self.assertEqual(e.status_code, 404)
+
+        # Insert users
+        users = []
+        for i in range(10):
+            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+        r = await client.insert_users(users)
+        self.assertEqual(r['RowAffected'], 10)
+
+        # Get users
+        return_users = []
+        cursor = ''
+        while True:
+            part, cursor = await client.get_users(3, cursor)
+            return_users.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_users, users)
 
     async def test_items(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
@@ -292,6 +312,22 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         # List feedbacks
         feedbacks = await client.list_feedbacks('read', '100')
         self.assertEqual(feedbacks, [
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
+             'Timestamp': timestamp, 'Comment': ''},
+            {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
+             'Timestamp': timestamp, 'Comment': ''}
+        ])
+        # Get all feedbacks
+        return_feedbacks = []
+        cursor = ''
+        while True:
+            part, cursor = await client.get_feedbacks(2, cursor)
+            return_feedbacks.extend(part)
+            if cursor == '':
+                break
+        self.assertEqual(return_feedbacks, [
+            {'FeedbackType': 'like', 'UserId': '100', 'ItemId': '100',
+             'Timestamp': timestamp, 'Comment': ''},
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '200',
              'Timestamp': timestamp, 'Comment': ''},
             {'FeedbackType': 'read', 'UserId': '100', 'ItemId': '300',
