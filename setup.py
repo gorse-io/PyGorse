@@ -7,7 +7,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(name='PyGorse',
-      version='0.4.9',
+      version='0.4.10',
       description='Python SDK for gorse recommender system',
       packages=['gorse'],
       install_requires=['requests>=2.14.0', 'aiohttp>=3.8.3'],
