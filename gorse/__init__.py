@@ -38,7 +38,7 @@ class Gorse:
         self.timeout = timeout
 
     def insert_feedback(
-            self, feedback_type: str, user_id: str, item_id: str, timestamp: str
+            self, feedback_type: str, user_id: str, item_id: str, timestamp: str, value: float = 0
     ) -> dict:
         """
         Insert a feedback.
@@ -52,6 +52,7 @@ class Gorse:
                     "UserId": user_id,
                     "ItemId": item_id,
                     "Timestamp": timestamp,
+                    "Value": value,
                 }
             ],
         )
