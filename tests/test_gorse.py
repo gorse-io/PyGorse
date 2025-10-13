@@ -28,13 +28,13 @@ class TestGorseClient(unittest.TestCase):
 
         # Insert a user.
         r = client.insert_user({'UserId': '100', 'Labels': [
-            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            'a', 'b', 'c'], 'Comment': 'comment'})
         self.assertEqual(r['RowAffected'], 1)
 
         # Get this user.
         user = client.get_user('100')
         self.assertDictEqual(user, {'UserId': '100', 'Labels': [
-            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            'a', 'b', 'c'], 'Subscribe': None, 'Comment': 'comment'})
 
         # Delete this user.
         r = client.delete_user('100')
@@ -48,7 +48,7 @@ class TestGorseClient(unittest.TestCase):
         # Insert users
         users = []
         for i in range(10):
-            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': None, 'Comment': 'comment'})
         r = client.insert_users(users)
         self.assertEqual(r['RowAffected'], 10)
 
@@ -206,13 +206,13 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
 
         # Insert a user.
         r = await client.insert_user({'UserId': '100', 'Labels': [
-            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            'a', 'b', 'c'], 'Comment': 'comment'})
         self.assertEqual(r['RowAffected'], 1)
 
         # Get this user.
         user = await client.get_user('100')
         self.assertDictEqual(user, {'UserId': '100', 'Labels': [
-            'a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            'a', 'b', 'c'], 'Subscribe': None, 'Comment': 'comment'})
 
         # Delete this user.
         r = await client.delete_user('100')
@@ -226,7 +226,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         # Insert users
         users = []
         for i in range(10):
-            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': ['d', 'e'], 'Comment': 'comment'})
+            users.append({'UserId': str(i), 'Labels': ['a', 'b', 'c'], 'Subscribe': None, 'Comment': 'comment'})
         r = await client.insert_users(users)
         self.assertEqual(r['RowAffected'], 10)
 
