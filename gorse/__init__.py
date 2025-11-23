@@ -104,6 +104,12 @@ class Gorse:
             "GET", f"{self.entry_point}/api/feedback", params={'n': n, 'cursor': cursor})
         return response['Feedback'], response['Cursor']
 
+    def delete_feedback(self, user_id: str, item_id: str) -> dict:
+        """
+        Delete a feedback.
+        """
+        return self.__request("DELETE", f"{self.entry_point}/api/feedback/{user_id}/{item_id}")
+
     def insert_item(self, item) -> dict:
         """
         Insert an item.
@@ -223,6 +229,12 @@ class AsyncGorse:
                 }
             ],
         )
+    
+    async def delete_feedback(self, user_id: str, item_id: str) -> dict:
+        """
+        Delete a feedback.
+        """
+        return await self.__request("DELETE", f"{self.entry_point}/api/feedback/{user_id}/{item_id}")
 
     async def list_feedbacks(self, feedback_type: str, user_id: str):
         """

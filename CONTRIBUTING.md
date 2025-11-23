@@ -17,10 +17,10 @@ After installing the required software, run the following commands:
 
 ```bash
 # Install tox
-pip install tox
+pip install tox --break-system-packages
 
-# Start a local Gorse cluster
-docker-compose up -d
+# Setup Gorse
+curl -sL https://github.com/gorse-io/gorse/raw/refs/heads/master/client/setup-test.sh | bash
 ```
 
 ### Run Unit Tests
