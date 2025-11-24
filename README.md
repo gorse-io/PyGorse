@@ -30,14 +30,39 @@ Create a client by the entrypoint and api key.
 from gorse import Gorse
 
 client = Gorse('http://127.0.0.1:8087', 'api_key')
+
+# Insert a user
+client.insert_user({
+    'UserId': 'bob',
+    'Labels': {
+        'gender': 'M',
+        'age': 24
+    },
+    'Comment': 'my user'
+})
+
+# Insert items
+client.insert_item({
+    'ItemId': 'vuejs:vue',
+    'IsHidden': False,
+    'Labels': {
+        'language': 'JavaScript'
+    },
+    'Categories': ['framework'],
+    'Timestamp': '2022-02-24T00:00:00Z',
+    'Comment': 'Vue.js framework'
+})
+
+# Insert feedbacks
 client.insert_feedbacks([
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'vuejs:vue', 'Timestamp': '2022-02-24' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'd3:d3', 'Timestamp': '2022-02-25' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'dogfalo:materialize', 'Timestamp': '2022-02-26' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'mozilla:pdf.js', 'Timestamp': '2022-02-27' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'moment:moment', 'Timestamp': '2022-02-28' }
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'vuejs:vue', 'Timestamp': '2022-02-24T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'd3:d3', 'Timestamp': '2022-02-25T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'dogfalo:materialize', 'Timestamp': '2022-02-26T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'mozilla:pdf.js', 'Timestamp': '2022-02-27T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'moment:moment', 'Timestamp': '2022-02-28T00:00:00Z' }
 ])
 
+# Get recommendation
 client.get_recommend('bob', n=10)
 ```
 
@@ -47,13 +72,38 @@ The Python SDK implements the async client as well:
 from gorse import AsyncGorse
 
 client = AsyncGorse('http://127.0.0.1:8087', 'api_key')
+
+# Insert a user
+await client.insert_user({
+    'UserId': 'bob',
+    'Labels': {
+        'gender': 'M',
+        'age': 24
+    },
+    'Comment': 'my user'
+})
+
+# Insert items
+await client.insert_item({
+    'ItemId': 'vuejs:vue',
+    'IsHidden': False,
+    'Labels': {
+        'language': 'JavaScript'
+    },
+    'Categories': ['framework'],
+    'Timestamp': '2022-02-24T00:00:00Z',
+    'Comment': 'Vue.js framework'
+})
+
+# Insert feedbacks
 await client.insert_feedbacks([
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'vuejs:vue', 'Timestamp': '2022-02-24' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'd3:d3', 'Timestamp': '2022-02-25' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'dogfalo:materialize', 'Timestamp': '2022-02-26' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'mozilla:pdf.js', 'Timestamp': '2022-02-27' },
-    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'moment:moment', 'Timestamp': '2022-02-28' }
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'vuejs:vue', 'Timestamp': '2022-02-24T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'd3:d3', 'Timestamp': '2022-02-25T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'dogfalo:materialize', 'Timestamp': '2022-02-26T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'mozilla:pdf.js', 'Timestamp': '2022-02-27T00:00:00Z' },
+    { 'FeedbackType': 'star', 'UserId': 'bob', 'ItemId': 'moment:moment', 'Timestamp': '2022-02-28T00:00:00Z' }
 ])
 
+# Get recommendation
 await client.get_recommend('bob', n=10)
 ```
