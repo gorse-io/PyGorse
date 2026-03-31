@@ -79,19 +79,7 @@ class Gorse:
         """
         return self.__request("GET", f"{self.entry_point}/api/user/{user_id}/feedback/{feedback_type}")
 
-    def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0, write_back_type: str = None,
-                      write_back_delay: str = None) -> List[str]:
-        """
-        Get recommendation.
-        """
-        payload = {"n": n, "offset": offset}
-        if write_back_type:
-            payload["write-back-type"] = write_back_type
-        if write_back_delay:
-            payload["write-back-delay"] = write_back_delay
-        return self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload)
-
-    def get_recommend_with_scores(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+    def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
                                    write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
         """
         Get recommendation with scores.
@@ -276,20 +264,8 @@ class AsyncGorse:
         """
         return await self.__request("GET", f"{self.entry_point}/api/user/{user_id}/feedback/{feedback_type}")
 
-    async def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
-                            write_back_type: str = None,
-                            write_back_delay: str = None) -> List[str]:
-        """
-        Get recommendation.
-        """
-        payload = {"n": n, "offset": offset}
-        if write_back_type:
-            payload["write-back-type"] = write_back_type
-        if write_back_delay:
-            payload["write-back-delay"] = write_back_delay
-        return await self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload)
 
-    async def get_recommend_with_scores(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+    async def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
                                          write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
         """
         Get recommendation with scores.
