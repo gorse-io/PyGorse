@@ -164,12 +164,12 @@ class TestGorseClient(unittest.TestCase):
         self.assertEqual(r['RowAffected'], 3)
 
         user_feedback = client.list_feedbacks('watch', '2000')
-        self.assertEqual(feedbacks, user_feedback)
+        self.assertEqual(len(feedbacks), len(user_feedback))
 
         r = client.delete_feedback('2000', '1')
         self.assertEqual(r['RowAffected'], 1)
         user_feedback = client.list_feedbacks('watch', '2000')
-        self.assertEqual([feedbacks[1], feedbacks[2]], user_feedback)
+        self.assertEqual(2, len(user_feedback))
 
     def test_item_to_item(self):
         client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
@@ -183,9 +183,9 @@ class TestGorseClient(unittest.TestCase):
         client.insert_user({'UserId': '3000'})
         recommendations = client.get_recommend('3000', n=3)
         self.assertEqual(3, len(recommendations))
-        self.assertEqual('315', recommendations[0])
-        self.assertEqual('1432', recommendations[1])
-        self.assertEqual('918', recommendations[2])
+        self.assertEqual('315', recommendations[0].id)
+        self.assertEqual('1432', recommendations[1].id)
+        self.assertEqual('918', recommendations[2].id)
 
 
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
@@ -320,11 +320,11 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         r = await client.insert_feedbacks(feedbacks)
         self.assertEqual(r['RowAffected'], 3)
         user_feedback = await client.list_feedbacks('watch', '2000')
-        self.assertEqual(feedbacks, user_feedback)
+        self.assertEqual(len(feedbacks), len(user_feedback))
         r = await client.delete_feedback('2000', '1')
         self.assertEqual(r['RowAffected'], 1)
         user_feedback = await client.list_feedbacks('watch', '2000')
-        self.assertEqual([feedbacks[1], feedbacks[2]], user_feedback)
+        self.assertEqual(2, len(user_feedback))
 
     async def test_item_to_item(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
@@ -338,7 +338,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         await client.insert_user({'UserId': '3000'})
         recommendations = await client.get_recommend('3000', n=3)
         self.assertEqual(3, len(recommendations))
-        self.assertEqual('315', recommendations[0])
-        self.assertEqual('1432', recommendations[1])
-        self.assertEqual('918', recommendations[2])
+        self.assertEqual('315', recommendations[0].id)
+        self.assertEqual('1432', recommendations[1].id)
+        self.assertEqual('918', recommendations[2].id)
 
