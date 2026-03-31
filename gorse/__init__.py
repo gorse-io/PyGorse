@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 
 import aiohttp
 import requests
@@ -25,6 +25,22 @@ class GorseException(Exception):
     def __init__(self, status_code: int, message: str):
         self.status_code = status_code
         self.message = message
+
+
+class Score:
+    """
+    Scored item.
+    """
+    def __init__(self, id: str, score: float):
+        self.id = id
+        self.score = score
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Score':
+        return cls(id=data['Id'], score=data['Score'])
+
+    def to_dict(self) -> dict:
+        return {'Id': self.id, 'Score': self.score}
 
 
 class Gorse:
@@ -74,6 +90,21 @@ class Gorse:
         if write_back_delay:
             payload["write-back-delay"] = write_back_delay
         return self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload)
+
+    def get_recommend_with_scores(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+                                   write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
+        """
+        Get recommendation with scores.
+        Uses X-API-Version: 2 header to return scores.
+        """
+        payload = {"n": n, "offset": offset}
+        if write_back_type:
+            payload["write-back-type"] = write_back_type
+        if write_back_delay:
+            payload["write-back-delay"] = write_back_delay
+        result = self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload,
+                                headers={"X-API-Version": "2"})
+        return [Score.from_dict(item) for item in result]
 
     def session_recommend(self, feedbacks: list, n: int = 10) -> list:
         """
@@ -188,11 +219,14 @@ class Gorse:
         """
         return self.__request("DELETE", f"{self.entry_point}/api/user/{user_id}")
 
-    def __request(self, method: str, url: str, params=None, json=None) -> dict:
+    def __request(self, method: str, url: str, params=None, json=None, headers: Dict[str, str] = None) -> dict:
+        request_headers = {"X-API-Key": self.api_key}
+        if headers:
+            request_headers.update(headers)
         response = requests.request(
             method, url,
             params=params,
-            headers={"X-API-Key": self.api_key},
+            headers=request_headers,
             timeout=self.timeout,
             json=json
         )
@@ -254,6 +288,21 @@ class AsyncGorse:
         if write_back_delay:
             payload["write-back-delay"] = write_back_delay
         return await self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload)
+
+    async def get_recommend_with_scores(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+                                         write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
+        """
+        Get recommendation with scores.
+        Uses X-API-Version: 2 header to return scores.
+        """
+        payload = {"n": n, "offset": offset}
+        if write_back_type:
+            payload["write-back-type"] = write_back_type
+        if write_back_delay:
+            payload["write-back-delay"] = write_back_delay
+        result = await self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload,
+                                      headers={"X-API-Version": "2"})
+        return [Score.from_dict(item) for item in result]
 
     async def session_recommend(self, feedbacks: list, n: int = 10) -> list:
         """
@@ -363,10 +412,13 @@ class AsyncGorse:
         """
         return await self.__request("DELETE", f"{self.entry_point}/api/user/{user_id}")
 
-    async def __request(self, method: str, url: str, params=None, json=None) -> dict:
+    async def __request(self, method: str, url: str, params=None, json=None, headers: Dict[str, str] = None) -> dict:
+        request_headers = {"X-API-Key": self.api_key}
+        if headers:
+            request_headers.update(headers)
         async with aiohttp.ClientSession() as session:
             async with session.request(method, url, params=params, json=json,
-                                       headers={"X-API-Key": self.api_key}) as response:
+                                       headers=request_headers) as response:
                 if response.status == 200:
                     return await response.json()
                 raise GorseException(response.status, await response.text())
