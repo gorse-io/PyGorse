@@ -183,9 +183,9 @@ class TestGorseClient(unittest.TestCase):
         client.insert_user({'UserId': '3000'})
         recommendations = client.get_recommend('3000', n=3)
         self.assertEqual(3, len(recommendations))
-        self.assertEqual('315', recommendations[0])
-        self.assertEqual('1432', recommendations[1])
-        self.assertEqual('918', recommendations[2])
+        self.assertEqual('315', recommendations[0].id)
+        self.assertEqual('1432', recommendations[1].id)
+        self.assertEqual('918', recommendations[2].id)
 
 
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
@@ -338,7 +338,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         await client.insert_user({'UserId': '3000'})
         recommendations = await client.get_recommend('3000', n=3)
         self.assertEqual(3, len(recommendations))
-        self.assertEqual('315', recommendations[0])
-        self.assertEqual('1432', recommendations[1])
-        self.assertEqual('918', recommendations[2])
+        self.assertEqual('315', recommendations[0].id)
+        self.assertEqual('1432', recommendations[1].id)
+        self.assertEqual('918', recommendations[2].id)
 
