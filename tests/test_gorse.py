@@ -147,6 +147,7 @@ class TestGorseClient(unittest.TestCase):
                 'ItemId': '1060',
                 'Value': 2.0,
                 'Timestamp': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'Labels': ['movie', 'positive'],
                 'Comment': ''
             },
             {
@@ -155,6 +156,7 @@ class TestGorseClient(unittest.TestCase):
                 'ItemId': '11',
                 'Value': 3.0,
                 'Timestamp': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'Labels': ['source:test', 'device:web'],
                 'Comment': ''
             }
         ]
@@ -304,6 +306,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
                 'ItemId': '1060',
                 'Value': 2.0,
                 'Timestamp': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'Labels': ['movie', 'positive'],
                 'Comment': ''
             },
             {
@@ -312,6 +315,7 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
                 'ItemId': '11',
                 'Value': 3.0,
                 'Timestamp': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'Labels': ['source:test', 'device:web'],
                 'Comment': ''
             }
         ]
@@ -341,4 +345,3 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('315', recommendations[0].id)
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
-
