@@ -128,6 +128,13 @@ class TestGorseClient(unittest.TestCase):
         except GorseException as e:
             self.assertEqual(e.status_code, 404)
 
+    def test_search_items(self):
+        client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        items = client.search_items('Toy Story', 3)
+        self.assertGreater(len(items), 0)
+        self.assertEqual('1', items[0]['ItemId'])
+        self.assertEqual('Toy Story (1995)', items[0]['Comment'])
+
     def test_feedback(self):
         client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
         client.insert_user({'UserId': '2000'})
@@ -286,6 +293,13 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         except GorseException as e:
             self.assertEqual(e.status_code, 404)
 
+    async def test_search_items(self):
+        client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        items = await client.search_items('Toy Story', 3)
+        self.assertGreater(len(items), 0)
+        self.assertEqual('1', items[0]['ItemId'])
+        self.assertEqual('Toy Story (1995)', items[0]['Comment'])
+
     async def test_feedback(self):
         client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
         await client.insert_user({'UserId': '2000'})
@@ -341,4 +355,3 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('315', recommendations[0].id)
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
-
