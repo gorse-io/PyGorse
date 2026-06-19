@@ -152,6 +152,17 @@ class Gorse:
             "GET", f"{self.entry_point}/api/items", params={'n': n, 'cursor': cursor})
         return response['Items'], response['Cursor']
 
+    def search_items(self, query: str, n: int = 10) -> List[dict]:
+        """
+        Search items.
+        :param query: search query
+        :param n: number of returned items
+        :return: items
+        """
+        response = self.__request(
+            "GET", f"{self.entry_point}/api/items", params={'q': query, 'n': n})
+        return response['Items']
+
     def update_item(self, item_id: str, is_hidden: bool = None, categories: List[str] = None, labels: List[str] = None,
                     timestamp: str = None,
                     comment: str = None) -> dict:
@@ -331,6 +342,17 @@ class AsyncGorse:
         response = await self.__request(
             "GET", f"{self.entry_point}/api/items", params={'n': n, 'cursor': cursor})
         return response['Items'], response['Cursor']
+
+    async def search_items(self, query: str, n: int = 10) -> List[dict]:
+        """
+        Search items.
+        :param query: search query
+        :param n: number of returned items
+        :return: items
+        """
+        response = await self.__request(
+            "GET", f"{self.entry_point}/api/items", params={'q': query, 'n': n})
+        return response['Items']
 
     async def update_item(self, item_id: str, is_hidden: bool = None, categories: List[str] = None,
                           labels: List[str] = None,
