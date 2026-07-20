@@ -13,6 +13,7 @@
 # limitations under the License.
 from datetime import datetime, UTC
 import unittest
+from unittest.mock import AsyncMock, Mock
 
 from gorse import Gorse, GorseException, AsyncGorse
 
@@ -194,6 +195,18 @@ class TestGorseClient(unittest.TestCase):
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
 
+    def test_recommend_multiple_categories(self):
+        client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        request = Mock(return_value=[])
+        setattr(client, '_Gorse__request', request)
+
+        client.get_recommend('3000', category=['Drama', 'Comedy'], n=3)
+
+        request.assert_called_once_with(
+            'GET', f'{GORSE_ENDPOINT}/api/recommend/3000',
+            params={'n': 3, 'offset': 0, 'category': ['Drama', 'Comedy']},
+            headers={'X-API-Version': '2'})
+
 
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
 
@@ -355,3 +368,15 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('315', recommendations[0].id)
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
+
+    async def test_recommend_multiple_categories(self):
+        client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        request = AsyncMock(return_value=[])
+        setattr(client, '_AsyncGorse__request', request)
+
+        await client.get_recommend('3000', category=['Drama', 'Comedy'], n=3)
+
+        request.assert_awaited_once_with(
+            'GET', f'{GORSE_ENDPOINT}/api/recommend/3000',
+            params={'n': 3, 'offset': 0, 'category': ['Drama', 'Comedy']},
+            headers={'X-API-Version': '2'})
