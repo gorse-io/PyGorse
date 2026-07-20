@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Union
 
 import aiohttp
 import requests
@@ -79,18 +79,20 @@ class Gorse:
         """
         return self.__request("GET", f"{self.entry_point}/api/user/{user_id}/feedback/{feedback_type}")
 
-    def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+    def get_recommend(self, user_id: str, category: Union[str, List[str]] = "", n: int = 10, offset: int = 0,
                                    write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
         """
         Get recommendation with scores.
         Uses X-API-Version: 2 header to return scores.
         """
-        payload = {"n": n, "offset": offset}
+        payload: Dict[str, Any] = {"n": n, "offset": offset}
+        if category:
+            payload["category"] = category
         if write_back_type:
             payload["write-back-type"] = write_back_type
         if write_back_delay:
             payload["write-back-delay"] = write_back_delay
-        result = self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload,
+        result = self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}", params=payload,
                                 headers={"X-API-Version": "2"})
         return [Score.from_dict(item) for item in result]
 
@@ -276,18 +278,20 @@ class AsyncGorse:
         return await self.__request("GET", f"{self.entry_point}/api/user/{user_id}/feedback/{feedback_type}")
 
 
-    async def get_recommend(self, user_id: str, category: str = "", n: int = 10, offset: int = 0,
+    async def get_recommend(self, user_id: str, category: Union[str, List[str]] = "", n: int = 10, offset: int = 0,
                                          write_back_type: str = None, write_back_delay: str = None) -> List[Score]:
         """
         Get recommendation with scores.
         Uses X-API-Version: 2 header to return scores.
         """
-        payload = {"n": n, "offset": offset}
+        payload: Dict[str, Any] = {"n": n, "offset": offset}
+        if category:
+            payload["category"] = category
         if write_back_type:
             payload["write-back-type"] = write_back_type
         if write_back_delay:
             payload["write-back-delay"] = write_back_delay
-        result = await self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}/{category}", params=payload,
+        result = await self.__request("GET", f"{self.entry_point}/api/recommend/{user_id}", params=payload,
                                       headers={"X-API-Version": "2"})
         return [Score.from_dict(item) for item in result]
 

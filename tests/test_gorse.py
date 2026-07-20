@@ -194,6 +194,16 @@ class TestGorseClient(unittest.TestCase):
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
 
+    def test_recommend_multiple_categories(self):
+        client = Gorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        client.insert_user({'UserId': '3000'})
+        recommendations = client.get_recommend(
+            '3000', category=['Drama', 'Comedy'], n=3)
+        self.assertEqual(3, len(recommendations))
+        for recommendation in recommendations:
+            item = client.get_item(recommendation.id)
+            self.assertTrue({'Drama', 'Comedy'} & set(item['Categories']))
+
 
 class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
 
@@ -355,3 +365,13 @@ class TestAsyncGorseClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('315', recommendations[0].id)
         self.assertEqual('1432', recommendations[1].id)
         self.assertEqual('918', recommendations[2].id)
+
+    async def test_recommend_multiple_categories(self):
+        client = AsyncGorse(GORSE_ENDPOINT, GORSE_API_KEY)
+        await client.insert_user({'UserId': '3000'})
+        recommendations = await client.get_recommend(
+            '3000', category=['Drama', 'Comedy'], n=3)
+        self.assertEqual(3, len(recommendations))
+        for recommendation in recommendations:
+            item = await client.get_item(recommendation.id)
+            self.assertTrue({'Drama', 'Comedy'} & set(item['Categories']))
